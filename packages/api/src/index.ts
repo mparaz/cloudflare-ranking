@@ -81,6 +81,41 @@ app.get('/links', async (c) => {
 	}
 });
 
+// GET /links.html - Get all approved links as an HTML page
+app.get('/links.html', async (c) => {
+	try {
+		const { results } = await c.env.DB.prepare('SELECT * FROM links WHERE status = ? ORDER BY created_at DESC').bind('approved').all();
+		
+		const html = `
+			<!DOCTYPE html>
+			<html lang="en">
+			<head>
+				<meta charset="UTF-8">
+				<meta name="viewport" content="width=device-width, initial-scale=1.0">
+				<title>All Links</title>
+				<style>
+					body { font-family: sans-serif; background-color: #f0f0f0; color: #333; }
+					ul { list-style-type: none; padding: 0; }
+					li { background-color: #fff; margin: 0.5em 0; padding: 1em; border-radius: 5px; }
+					a { text-decoration: none; color: #007bff; }
+				</style>
+			</head>
+			<body>
+				<h1>All Submitted Links</h1>
+				<ul>
+					${results.map(link => `<li><a href="${(link.url as string)}">${(link.title as string)}</a></li>`).join('')}
+				</ul>
+			</body>
+			</html>
+		`;
+
+		return c.html(html);
+	} catch (e: any) {
+		console.error(e);
+		return c.text('Error fetching links', 500);
+	}
+});
+
 // POST /links - Submit a new link
 app.post('/links', validateTurnstile, async (c) => {
     const { title, url } = c.req.body;

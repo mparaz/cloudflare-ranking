@@ -11,18 +11,21 @@
     <div id="app">
         <h1>Link Ranker</h1>
 
-        <form id="submission-form">
-            <h2>Submit a New Link</h2>
-            <input type="text" id="title-input" placeholder="Title" required />
-            <input type="url" id="url-input" placeholder="URL" required />
-            <div id="turnstile-container"></div>
-            <button type="submit">Submit</button>
-        </form>
+        <div id="links-container"></div>
 
         <hr>
 
-        <h2>Ranked Links</h2>
-        <div id="links-container"></div>
+        <form id="submission-form">
+            <input type="text" id="title-input" placeholder="Title" required />
+            <input type="url" id="url-input" placeholder="URL" required />
+            <button type="submit">Submit link</button>
+        </form>
+
+        <div id="turnstile-container"></div>
+
+        <footer>
+            <a href="/api/links.html" target="_blank">HTML Index</a>
+        </footer>
     </div>
     <script type="module" src="/src/main.ts"></script>
 </body>

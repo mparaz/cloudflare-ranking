@@ -102,7 +102,30 @@ async function submitLink(title: string, url: string) {
         alert('Please complete the CAPTCHA');
         return;
     }
-    // ... (rest of submitLink is unchanged)
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/links`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, url, token: turnstileToken }),
+        });
+
+        if (response.ok) {
+            alert('Link submitted for review!');
+            (document.getElementById('submission-form') as HTMLFormElement).reset();
+            // Don't reset the token on success, allow it to be reused
+        } else {
+            alert(`Submission failed: ${await response.text()}`);
+            // If submission failed, the token might be bad, so reset the widget.
+            (window as any).turnstile.reset();
+            turnstileToken = null;
+        }
+    } catch (error) {
+        console.error('Error submitting link:', error);
+        alert('An error occurred during submission.');
+        (window as any).turnstile.reset();
+        turnstileToken = null;
+    }
 }
 
 async function handleVote(id: number, clickedDirection: VoteStatus) {
@@ -148,10 +171,12 @@ async function handleVote(id: number, clickedDirection: VoteStatus) {
             fetchLinks();
         } else {
             alert(`Vote failed. Please try again.`);
+            // If the vote failed, the token might be bad, so reset the widget.
+            (window as any).turnstile.reset();
+            turnstileToken = null;
         }
     } catch (error) {
         console.error(`Error voting:`, error);
-    } finally {
         (window as any).turnstile.reset();
         turnstileToken = null;
     }
