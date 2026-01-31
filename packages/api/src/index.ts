@@ -1,3 +1,5 @@
+console.log("--- RUNNING LATEST API CODE ---");
+
 import { Hono } from 'hono';
 import { sentry } from '@hono/sentry';
 
@@ -119,6 +121,30 @@ app.post('/links/:id/downvote', validateTurnstile, async (c) => {
 	} catch (e: any) {
 		console.error(e);
 		return c.json({ error: 'Error downvoting', message: e.message }, 500);
+	}
+});
+
+// POST /links/:id/unupvote - Remove an upvote
+app.post('/links/:id/unupvote', validateTurnstile, async (c) => {
+	const { id } = c.req.param();
+	try {
+		await c.env.DB.prepare('UPDATE links SET upvotes = upvotes - 1 WHERE id = ?').bind(id).run();
+		return c.json({ message: 'Un-upvoted successfully' });
+	} catch (e: any) {
+		console.error(e);
+		return c.json({ error: 'Error un-upvoting', message: e.message }, 500);
+	}
+});
+
+// POST /links/:id/undownvote - Remove a downvote
+app.post('/links/:id/undownvote', validateTurnstile, async (c) => {
+	const { id } = c.req.param();
+	try {
+		await c.env.DB.prepare('UPDATE links SET downvotes = downvotes - 1 WHERE id = ?').bind(id).run();
+		return c.json({ message: 'Un-downvoted successfully' });
+	} catch (e: any) {
+		console.error(e);
+		return c.json({ error: 'Error un-downvoting', message: e.message }, 500);
 	}
 });
 

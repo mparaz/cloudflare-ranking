@@ -104,6 +104,14 @@ button:hover {
     flex-grow: 1;
 }
 
+.voting button.voted-up {
+    color: #007bff; /* Blue for upvoted */
+}
+
+.voting button.voted-down {
+    color: #ff4136; /* Red for downvoted */
+}
+
 .link-details a {
     font-size: 1.2rem;
     color: #6495ed;
