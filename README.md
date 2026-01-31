@@ -199,6 +199,30 @@ Now, your live site should be fully functional.
 
 ---
 
+## Admin Workflow
+
+New links submitted by users are not visible by default. They are created with a `pending` status in the database. You must manually approve them.
+
+### Approving Links (Local Development)
+
+To approve all pending links in your local development environment, run the following command:
+
+```bash
+pnpm --filter api exec wrangler d1 execute ranking-db --local --command "UPDATE links SET status = 'approved' WHERE status = 'pending';"
+```
+
+### Approving Links (Production)
+
+To approve all pending links in your production database, run the same command but with the `--remote` flag:
+
+```bash
+pnpm --filter api exec wrangler d1 execute ranking-db --remote --command "UPDATE links SET status = 'approved' WHERE status = 'pending';"
+```
+
+You can also be more specific with the `WHERE` clause to approve a single link by its `id`.
+
+---
+
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
