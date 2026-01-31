@@ -125,9 +125,9 @@ Before deploying, you need to build the frontend and backend code.
 pnpm build
 ```
 
-### 4. Deploy with Pulumi
+### 4. Deploy Infrastructure with Pulumi
 
-Run `pulumi up` to preview and deploy the infrastructure.
+Run `pulumi up` to preview and deploy the infrastructure (Worker, D1 Database, Pages Project, etc.).
 
 ```bash
 # From the pulumi/ directory
@@ -136,9 +136,16 @@ pulumi up
 
 Pulumi will show you a preview of the resources that will be created. If everything looks correct, confirm the deployment.
 
-After the deployment is complete, Pulumi will output the `frontendUrl`, `apiEndpoint`, and `turnstileSiteKey`.
+### 5. Deploy Frontend to Cloudflare Pages
 
-### 5. Apply Database Migration
+After Pulumi has created the `ranking-frontend` Pages project, you need to upload your built frontend code to it.
+
+```bash
+# From the root directory
+pnpm exec wrangler pages deploy packages/frontend/dist --project-name=ranking-frontend
+```
+
+### 6. Apply Database Migration
 
 The first time you deploy, you must apply the database migration to your new production D1 database.
 
@@ -147,7 +154,7 @@ The first time you deploy, you must apply the database migration to your new pro
 pnpm --filter api exec wrangler d1 migrations apply ranking-db --remote
 ```
 
-### 6. Update Turnstile Site Key
+### 7. Update Turnstile Site Key
 
 Replace the placeholder Turnstile site key in `packages/frontend/src/main.ts` with the one from the Pulumi output. You will need the `turnstileSiteKey` for this.
 

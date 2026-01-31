@@ -3,8 +3,8 @@
   "private": true,
   "scripts": {
     "dev": "pnpm --filter frontend dev",
-    "build": "pnpm --filter frontend build && pnpm --filter api deploy",
-    "deploy": "pnpm --filter api deploy"
+    "build": "pnpm --filter frontend build && pnpm --filter api deploy:cf",
+    "deploy": "pnpm --filter api deploy:cf"
   },
   "devDependencies": {
     "@types/node": "^20.19.30",
