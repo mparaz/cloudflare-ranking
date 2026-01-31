@@ -78,6 +78,14 @@ pnpm --filter frontend dev
 
 Now you can open your browser to `http://localhost:5173` to see the application. The frontend is pre-configured with a test site key for Turnstile, so it will work out-of-the-box locally.
 
+### Troubleshooting
+
+If you get a "no such table: links" error in your API terminal, it means the local database migration did not run automatically. You can run it manually. Keep the `dev` server running and, in a new terminal, run:
+
+```bash
+pnpm --filter api exec wrangler d1 migrations apply ranking-db --local
+```
+
 ---
 
 ## Deployment
@@ -128,11 +136,20 @@ pulumi up
 
 Pulumi will show you a preview of the resources that will be created. If everything looks correct, confirm the deployment.
 
-After the deployment is complete, Pulumi will output the `frontendUrl`, `apiEndpoint`, and `turnstileSiteKey`. You will need the `turnstileSiteKey` for the frontend configuration.
+After the deployment is complete, Pulumi will output the `frontendUrl`, `apiEndpoint`, and `turnstileSiteKey`.
 
-### 5. Update Turnstile Site Key
+### 5. Apply Database Migration
 
-Replace the placeholder Turnstile site key in `packages/frontend/src/main.ts` with the one from the Pulumi output.
+The first time you deploy, you must apply the database migration to your new production D1 database.
+
+```bash
+# From the root directory
+pnpm --filter api exec wrangler d1 migrations apply ranking-db --remote
+```
+
+### 6. Update Turnstile Site Key
+
+Replace the placeholder Turnstile site key in `packages/frontend/src/main.ts` with the one from the Pulumi output. You will need the `turnstileSiteKey` for this.
 
 ```typescript
 // packages/frontend/src/main.ts
