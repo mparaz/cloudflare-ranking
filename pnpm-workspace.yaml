@@ -1,3 +1,6 @@
 packages:
-  - 'packages/*'
-  - 'pulumi'
+  - packages/*
+  - pulumi
+
+onlyBuiltDependencies:
+  - protobufjs

@@ -10,14 +10,13 @@
 		"cf-typegen": "wrangler types"
 	},
 	"devDependencies": {
-		"@cloudflare/vitest-pool-workers": "^0.12.4",
-		"typescript": "^5.5.2",
-		"vitest": "~3.2.0",
+		"@cloudflare/vitest-pool-workers": "^0.12.8",
+		"typescript": "^5.9.3",
+		"vitest": "~4.0.18",
 		"wrangler": "^4.61.1"
 	},
 	"dependencies": {
-		"hono": "^4.11.7",
-		"itty-router": "^5.0.22",
-		"toucan-js": "^4.1.1"
+		"@hono/sentry": "^1.2.2",
+		"hono": "^4.11.7"
 	}
 }

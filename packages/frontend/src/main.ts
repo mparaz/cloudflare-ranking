@@ -14,16 +14,30 @@ interface Link {
 
 let turnstileToken: string | null = null;
 
+const TURNSTILE_SITE_KEY = '0x4AAAAAAARdAg_1a-B2z5g3'; // Replace with your site key after deployment
+
 // --- Turnstile Rendering ---
 function renderTurnstile() {
+    console.log("Attempting to render Turnstile...");
     const turnstileContainer = document.getElementById('turnstile-container');
-    if (turnstileContainer && (window as any).turnstile) {
+    
+    if (!turnstileContainer) {
+        console.error("Turnstile container not found!");
+        return;
+    }
+    console.log("Turnstile container found.");
+
+    if ((window as any).turnstile) {
+        console.log("Turnstile object found on window. Rendering...");
         (window as any).turnstile.render(turnstileContainer, {
-            sitekey: '0x4AAAAAAARdAg_1a-B2z5g3', // Replace with your site key
+            sitekey: TURNSTILE_SITE_KEY,
             callback: function(token: string) {
+                console.log("Turnstile challenge completed. Token received.");
                 turnstileToken = token;
             },
         });
+    } else {
+        console.error("Turnstile object not found on window. The script might not have loaded correctly.");
     }
 }
 
@@ -165,6 +179,7 @@ function addVotingEventListeners() {
 
 // --- Initialization ---
 function init() {
+    console.log("Turnstile script loaded. Initializing application...");
     renderTurnstile();
     fetchLinks();
     addSubmissionFormListener();
