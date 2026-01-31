@@ -14,7 +14,7 @@ interface Link {
 
 let turnstileToken: string | null = null;
 
-const TURNSTILE_SITE_KEY = '0x4AAAAAAARdAg_1a-B2z5g3'; // Replace with your site key after deployment
+const TURNSTILE_SITE_KEY = '1x00000000000000000000AA'; // This is a test site key that always passes.
 
 // --- Turnstile Rendering ---
 function renderTurnstile() {
