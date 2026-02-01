@@ -2,6 +2,7 @@ console.log("--- RUNNING LATEST API CODE ---");
 
 import { Hono } from 'hono';
 import { sentry } from '@hono/sentry';
+import { cors } from 'hono/cors';
 
 // Define the environment interface
 export interface Env {
@@ -17,6 +18,12 @@ type Bindings = {
 }
 
 const app = new Hono<{ Bindings: Bindings }>();
+
+// CORS Middleware
+app.use('*', cors({
+    origin: '*', // We can restrict this later to the actual domain
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+}));
 
 // Sentry Middleware
 app.use('*', (c, next) => {

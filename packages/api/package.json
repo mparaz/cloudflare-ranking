@@ -1,8 +1,9 @@
 {
-	"name": "api",
+	"name": "ranking-api",
 	"version": "0.0.0",
 	"private": true,
 	"scripts": {
+		"build": "esbuild src/index.ts --bundle --outfile=dist/index.js --format=esm --target=es2022 --minify",
 		"deploy:cf": "wrangler deploy",
 		"dev": "wrangler dev",
 		"start": "wrangler dev",
@@ -11,6 +12,7 @@
 	},
 	"devDependencies": {
 		"@cloudflare/vitest-pool-workers": "^0.12.8",
+		"esbuild": "^0.27.2",
 		"typescript": "^5.9.3",
 		"vitest": "~4.0.18",
 		"wrangler": "^4.61.1"

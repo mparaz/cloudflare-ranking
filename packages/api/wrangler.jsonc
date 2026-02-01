@@ -14,7 +14,7 @@
 		{
 			"binding": "DB",
 			"database_name": "ranking-db",
-			"database_id": "35aa66ba-dd3a-4c70-88a3-5ec0d92f9cef",
+			"database_id": "ef4f7d9c-f2b9-4dd9-81d1-8f708314b27b",
 			"migrations_dir": "migrations"
 		}
 	]

@@ -24,16 +24,19 @@ const turnstileSite = new cloudflare.TurnstileWidget("ranking-turnstile", {
 // 3. Cloudflare Worker (API)
 const apiWorker = new cloudflare.WorkersScript("api-worker", {
     accountId: accountId,
+    scriptName: "ranking-api",
     content: fs.readFileSync(path.join(__dirname, "..", "packages", "api", "dist", "index.js"), "utf-8"),
-    d1DatabaseBindings: [{
+    bindings: [{
         name: "DB",
-        databaseId: d1Database.id,
-    }],
-    secretTextBindings: [{
+        type: "d1",
+        id: d1Database.id,
+    }, {
         name: "TURNSTILE_SECRET_KEY",
+        type: "secret_text",
         text: turnstileSite.secret,
     }],
-    module: true,
+    mainModule: "index.js",
+    compatibilityDate: "2025-09-27",
 });
 
 // 4. Cloudflare Pages Project (Frontend)
@@ -45,8 +48,34 @@ const frontendPages = new cloudflare.PagesProject("frontend-pages", {
         buildCommand: "pnpm --filter frontend build",
         destinationDir: "dist",
     },
+    deploymentConfigs: {
+        production: {
+            envVars: {
+                VITE_TURNSTILE_SITE_KEY: {
+                    type: "plain_text",
+                    value: turnstileSite.sitekey,
+                },
+                VITE_API_BASE_URL: {
+                    type: "plain_text",
+                    value: "https://api.mparaz.workers.dev",
+                },
+            },
+        },
+        preview: {
+            envVars: {
+                VITE_TURNSTILE_SITE_KEY: {
+                    type: "plain_text",
+                    value: turnstileSite.sitekey,
+                },
+                VITE_API_BASE_URL: {
+                    type: "plain_text",
+                    value: "https://api.mparaz.workers.dev",
+                },
+            },
+        },
+    },
 });
 
 // Export the URLs and other important info
-export const frontendUrl = frontendPages.domains[0];
+export const frontendUrl = frontendPages.subdomain.apply(s => `https://${s}`);
 export const turnstileSiteKey = turnstileSite.sitekey;
