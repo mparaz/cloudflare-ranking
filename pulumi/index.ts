@@ -17,7 +17,7 @@ const d1Database = new cloudflare.D1Database("ranking-db", {
 const turnstileSite = new cloudflare.TurnstileWidget("ranking-turnstile", {
     accountId: accountId,
     name: "ranking-app-turnstile",
-    domains: ["aisoftwareengineering.com"], // Replace with your domain
+    domains: ["aisoftwareengineering.com", "pages.dev"],
     mode: "managed",
 });
 
@@ -76,6 +76,29 @@ const frontendPages = new cloudflare.PagesProject("frontend-pages", {
     },
 });
 
+// 5. Custom Domain for Pages
+const zone = cloudflare.getZoneOutput({
+    filter: {
+        name: "aisoftwareengineering.com",
+    },
+});
+
+const pagesDomain = new cloudflare.PagesDomain("frontend-custom-domain", {
+    accountId: accountId,
+    projectName: frontendPages.name,
+    name: "aisoftwareengineering.com",
+});
+
+// 6. DNS Record for the custom domain
+const pagesCname = new cloudflare.DnsRecord("pages-cname", {
+    zoneId: zone.id,
+    name: "@",
+    type: "CNAME",
+    content: frontendPages.subdomain,
+    proxied: true,
+    ttl: 1,
+});
+
 // Export the URLs and other important info
-export const frontendUrl = frontendPages.subdomain.apply(s => `https://${s}`);
+export const frontendUrl = pulumi.interpolate`https://aisoftwareengineering.com`;
 export const turnstileSiteKey = turnstileSite.sitekey;
