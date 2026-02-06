@@ -34,6 +34,10 @@ const apiWorker = new cloudflare.WorkersScript("api-worker", {
         name: "TURNSTILE_SECRET_KEY",
         type: "secret_text",
         text: turnstileSite.secret,
+    }, {
+        name: "AE",
+        type: "analytics_engine",
+        dataset: "ranking_analytics",
     }],
     mainModule: "index.js",
     compatibilityDate: "2025-09-27",
