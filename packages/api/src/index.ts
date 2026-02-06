@@ -3,21 +3,30 @@ console.log("--- RUNNING LATEST API CODE ---");
 import { Hono } from 'hono';
 import { sentry } from '@hono/sentry';
 import { cors } from 'hono/cors';
+import { logAnalytics } from './analytics';
 
 // Define the environment interface
 export interface Env {
 	DB: D1Database;
 	TURNSTILE_SECRET_KEY: string;
+	AE: AnalyticsEngineDataset;
 	SENTRY_DSN?: string;
 }
 
 type Bindings = {
     DB: D1Database;
     TURNSTILE_SECRET_KEY: string;
+    AE: AnalyticsEngineDataset;
     SENTRY_DSN?: string;
 }
 
 const app = new Hono<{ Bindings: Bindings }>();
+
+// Analytics Middleware
+app.use('*', async (c, next) => {
+    logAnalytics(c.req.raw, c.env);
+    await next();
+});
 
 // CORS Middleware
 app.use('*', cors({
