@@ -52,9 +52,15 @@ This document summarizes the actions taken by the agent to build, debug, and ref
 
 ## 5. Documentation
 
-*   **README.md:** Created and progressively updated the `README.md` file to include:
-    *   Detailed setup and local development instructions.
-    *   A multi-step deployment guide.
-    *   A troubleshooting section for the D1 migration issue.
-    *   An "Admin Workflow" section explaining how to approve links.
-    *   Instructions for manual DNS and Worker Route configuration.
+*   **README.md:** Updated the `README.md` and root `package.json` to reflect the final project structure, naming conventions, and automated deployment process.
+
+## 6. Domain and Final Wiring
+
+*   **Custom Domain Setup:** Configured `aisoftwareengineering.com` as a custom domain for the Cloudflare Pages project via Pulumi.
+*   **DNS Automation:** Automated the creation of CNAME records in Cloudflare DNS using Pulumi's `DnsRecord` resource.
+*   **Security Alignment:** Aligned the Turnstile widget configuration to support both the custom domain and the `.pages.dev` preview URLs.
+*   **Worker Connectivity:**
+    *   Resolved an issue where multiple workers were conflicting over the same hostname.
+    *   Standardized on the `ranking-api` worker and verified end-to-end connectivity with the D1 database.
+    *   Enabled CORS on the Hono backend to allow secure cross-origin requests from the frontend.
+*   **Environment Variables:** Implemented a build-time environment variable injection for `VITE_API_BASE_URL` and `VITE_TURNSTILE_SITE_KEY`, ensuring the frontend always points to the correct production environment.

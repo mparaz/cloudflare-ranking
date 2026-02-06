@@ -3,8 +3,9 @@
   "private": true,
   "scripts": {
     "dev": "pnpm --filter frontend dev",
-    "build": "pnpm --filter frontend build && pnpm --filter api deploy:cf",
-    "deploy": "pnpm --filter api deploy:cf"
+    "build": "pnpm --filter frontend build && pnpm --filter ranking-api build",
+    "deploy:api": "pnpm --filter ranking-api build && pnpm --filter ranking-api exec wrangler deploy",
+    "deploy:infra": "pnpm --filter ranking-api build && cd pulumi && pulumi up --yes"
   },
   "devDependencies": {
     "@types/node": "^20.19.30",

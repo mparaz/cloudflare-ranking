@@ -9,12 +9,12 @@ This is a full-stack, open-source link ranking application similar to Digg, buil
 *   **Voting:** Upvote and downvote links.
 *   **Spam Protection:** Cloudflare Turnstile (CAPTCHA) protects submissions and voting.
 *   **Serverless:** Runs on Cloudflare Workers, Pages, and D1.
-*   **Infrastructure as Code:** Cloudflare resources are managed with Pulumi.
+*   **Infrastructure as Code:** Cloudflare resources (Database, DNS, Pages, Worker) are managed with Pulumi.
 
 ## Tech Stack
 
 *   **Frontend:** Vanilla TypeScript, HTML, CSS, powered by Vite.
-*   **Backend:** REST API with Cloudflare Workers (TypeScript).
+*   **Backend:** REST API with Hono on Cloudflare Workers.
 *   **Database:** Cloudflare D1 (SQL).
 *   **IaC:** Pulumi.
 *   **Monorepo Management:** pnpm workspaces.
@@ -36,7 +36,7 @@ This is a full-stack, open-source link ranking application similar to Digg, buil
 1.  **Clone the repository:**
     ```bash
     git clone <repository-url>
-    cd <repository-directory>
+    cd cloudflare-ranking
     ```
 
 2.  **Install dependencies:**
@@ -56,177 +56,95 @@ Before starting the backend, create a `.dev.vars` file in the `packages/api` dir
 
 ```ini
 # packages/api/.dev.vars
-
 TURNSTILE_SECRET_KEY="1x0000000000000000000000000000000AA"
 ```
 
-You should use the "Testing Keys" for Turnstile from the Cloudflare documentation for local development. The secret key above is a test key.
-
 ### 2. Start the Backend Worker
 
-In the first terminal, run the API worker. This will start a local server for your worker on port `8787` and create a local D1 database.
+In the first terminal, run the API worker.
 ```bash
-pnpm --filter api dev
+pnpm --filter ranking-api dev
 ```
 
 ### 3. Start the Frontend Dev Server
 
-In the second terminal, run the Vite dev server for the frontend. This will be available on port `5173` by default and will proxy API requests to the worker.
+In the second terminal, run the Vite dev server for the frontend.
 ```bash
 pnpm --filter frontend dev
 ```
 
-Now you can open your browser to `http://localhost:5173` to see the application. The frontend is pre-configured with a test site key for Turnstile, so it will work out-of-the-box locally.
-
-### Troubleshooting
-
-If you get a "no such table: links" error in your API terminal, it means the local database migration did not run automatically. You can run it manually. Keep the `dev` server running and, in a new terminal, run:
-
-```bash
-pnpm --filter api exec wrangler d1 migrations apply ranking-db --local
-```
+Now you can open your browser to `http://localhost:5173`.
 
 ---
 
 ## Deployment
 
-Deployment is handled by Pulumi.
+Deployment is managed by Pulumi and includes infrastructure setup and DNS configuration.
 
-### 1. Log in to Pulumi
+### 1. Configure Pulumi
 
-If you're using the Pulumi Service backend (free tier available), log in:
-```bash
-pulumi login
-```
-
-### 2. Configure Cloudflare Account
-
-You need to set your Cloudflare Account ID so Pulumi can create resources in your account.
+Set your Cloudflare Account ID and API Token in the Pulumi configuration.
 
 ```bash
-# From the pulumi/ directory
 cd pulumi
 
 # Set your Cloudflare Account ID
-pulumi config set cloudflare:accountId <YOUR_CLOUDFLARE_ACCOUNT_ID>
-```
-You can find your Account ID in the Cloudflare dashboard on the right-hand side of the overview page for any of your domains.
+pulumi config set ranking-app:cloudflareAccountId <YOUR_CLOUDFLARE_ACCOUNT_ID>
 
-You may also need to set your Cloudflare API token as an environment variable:
-```bash
-export CLOUDFLARE_API_TOKEN=<YOUR_CLOUDFLARE_API_TOKEN>
+# Set your Cloudflare API Token (as a secret)
+pulumi config set cloudflare:apiToken <YOUR_CLOUDFLARE_API_TOKEN> --secret
 ```
 
-### 3. Build the Projects
+### 2. Build and Deploy
 
-Before deploying, you need to build the frontend and backend code.
+You can deploy everything from the root directory:
+
 ```bash
-# From the root directory
+# Build the project
 pnpm build
+
+# Deploy infrastructure (including DNS and domain setup)
+pnpm deploy:infra
 ```
 
-### 4. Deploy Infrastructure with Pulumi
+### 3. Apply Database Migration
 
-Run `pulumi up` to preview and deploy the infrastructure (Worker, D1 Database, Pages Project, etc.).
+The first time you deploy, you must apply the database migration to your production D1 database.
 
 ```bash
-# From the pulumi/ directory
-pulumi up
-```
-
-Pulumi will show you a preview of the resources that will be created. If everything looks correct, confirm the deployment.
-
-### 5. Deploy Frontend to Cloudflare Pages
-
-After Pulumi has created the `ranking-frontend` Pages project, you need to upload your built frontend code to it.
-
-```bash
-# From the root directory
-pnpm exec wrangler pages deploy packages/frontend/dist --project-name=ranking-frontend
-```
-
-### 6. Apply Database Migration
-
-The first time you deploy, you must apply the database migration to your new production D1 database.
-
-```bash
-# From the root directory
-pnpm --filter api exec wrangler d1 migrations apply ranking-db --remote
-```
-
-### 7. Update Turnstile Site Key
-
-Replace the placeholder Turnstile site key in `packages/frontend/src/main.ts` with the one from the Pulumi output. You will need the `turnstileSiteKey` for this.
-
-```typescript
-// packages/frontend/src/main.ts
-// ...
-(window as any).turnstile.render(turnstileContainer, {
-    sitekey: 'YOUR_NEW_SITE_KEY', // <-- Replace this
-    callback: function(token: string) {
-// ...
-```
-
-After updating the key, you'll need to rebuild and redeploy.
-
-```bash
-pnpm build
-cd pulumi
-pulumi up
+pnpm --filter ranking-api exec wrangler d1 migrations apply ranking-db --remote
 ```
 
 ---
 
-## Post-Deployment: DNS Configuration
+## DNS and Domains
 
-This project's Pulumi setup does **not** manage DNS records. You must configure this manually in your Cloudflare dashboard.
+This project automatically manages the following via Pulumi:
+- **Custom Domain**: Links `aisoftwareengineering.com` to Cloudflare Pages.
+- **DNS Records**: Creates the necessary CNAME records.
+- **Worker Routes**: (Optional) Can be configured to route through the apex domain.
 
-### 1. Point Your Domain to Cloudflare Pages
-
-Navigate to your site in the Cloudflare Dashboard, then go to **DNS** > **Records**. You need to create a `CNAME` record pointing your desired domain or subdomain to the Cloudflare Pages project.
-
-*   **Type:** `CNAME`
-*   **Name:** `@` (for the root domain, e.g., `aisoftwareengineering.com`) or a subdomain (e.g., `ranking`).
-*   **Target:** The URL of your deployed Pages project (from the Pulumi output, e.g., `ranking-frontend.pages.dev`).
-*   **Proxy status:** Enabled (Orange Cloud).
-
-### 2. Route API Traffic to the Worker
-
-You need to create a route so that requests to `/api/*` on your domain are handled by your deployed worker.
-
-1.  Navigate to your site in the Cloudflare Dashboard.
-2.  Go to **Workers Routes**.
-3.  Click **Add route**.
-4.  **Route:** `*your-domain.com/api/*` (e.g., `aisoftwareengineering.com/api/*`)
-5.  **Service:** Select your `ranking-api` worker from the dropdown.
-6.  **Environment:** `production`
-7.  Click **Save**.
-
-Now, your live site should be fully functional.
+Currently, the frontend is configured to talk to the backend at `https://ranking-api.mparaz.workers.dev`.
 
 ---
 
 ## Admin Workflow
 
-New links submitted by users are not visible by default. They are created with a `pending` status in the database. You must manually approve them.
+New links are created with a `pending` status and must be manually approved.
 
-### Approving Links (Local Development)
-
-To approve all pending links in your local development environment, run the following command:
-
+### Listing Links
 ```bash
-pnpm --filter api exec wrangler d1 execute ranking-db --local --command "UPDATE links SET status = 'approved' WHERE status = 'pending';"
+pnpm --filter ranking-api exec wrangler d1 execute ranking-db --remote --command "SELECT id, title, url, status FROM links;"
 ```
 
-### Approving Links (Production)
-
-To approve all pending links in your production database, run the same command but with the `--remote` flag:
-
+### Approving Links
 ```bash
-pnpm --filter api exec wrangler d1 execute ranking-db --remote --command "UPDATE links SET status = 'approved' WHERE status = 'pending';"
-```
+# Approve all pending
+pnpm --filter ranking-api exec wrangler d1 execute ranking-db --remote --command "UPDATE links SET status = 'approved' WHERE status = 'pending';"
 
-You can also be more specific with the `WHERE` clause to approve a single link by its `id`.
+# Approve specific ID
+pnpm --filter ranking-api exec wrangler d1 execute ranking-db --remote --command "UPDATE links SET status = 'approved' WHERE id = 123;"
+```
 
 ---
 
