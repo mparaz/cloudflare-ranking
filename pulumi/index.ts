@@ -57,7 +57,7 @@ const frontendPages = new cloudflare.PagesProject("frontend-pages", {
                 },
                 VITE_API_BASE_URL: {
                     type: "plain_text",
-                    value: "https://api.mparaz.workers.dev",
+                    value: "https://ranking-api.mparaz.workers.dev",
                 },
             },
         },
@@ -69,7 +69,7 @@ const frontendPages = new cloudflare.PagesProject("frontend-pages", {
                 },
                 VITE_API_BASE_URL: {
                     type: "plain_text",
-                    value: "https://api.mparaz.workers.dev",
+                    value: "https://ranking-api.mparaz.workers.dev",
                 },
             },
         },

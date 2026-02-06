@@ -65,7 +65,11 @@ const validateTurnstile = async (c: any, next: any) => {
 
     const outcome: any = await result.json();
     if (!outcome.success) {
-        return c.json({ error: 'CAPTCHA validation failed' }, 403);
+        console.error('Turnstile failure:', outcome);
+        return c.json({ 
+            error: 'CAPTCHA validation failed', 
+            details: outcome['error-codes'] || [] 
+        }, 403);
     }
     
     c.req.body = body; // Store body for next middleware
