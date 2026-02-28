@@ -14,6 +14,7 @@ interface Link {
 }
 
 let turnstileToken: string | null = null;
+let captchaSessionReady = false;
 
 // --- Turnstile Rendering ---
 function renderTurnstile() {
@@ -128,12 +129,43 @@ async function submitLink(title: string, url: string) {
     }
 }
 
-async function handleVote(id: number, clickedDirection: VoteStatus) {
+async function ensureCaptchaSession(): Promise<boolean> {
+    if (captchaSessionReady) return true;
     if (!turnstileToken) {
         alert('Please complete the CAPTCHA to vote.');
-        (window as any).turnstile.reset();
-        return;
+        return false;
     }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/captcha/verify`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ token: turnstileToken }),
+        });
+
+        if (response.ok) {
+            captchaSessionReady = true;
+            (window as any).turnstile.reset();
+            turnstileToken = null;
+            return true;
+        }
+
+        alert('CAPTCHA verification failed. Please try again.');
+        (window as any).turnstile.reset();
+        turnstileToken = null;
+        return false;
+    } catch (error) {
+        console.error('Error verifying CAPTCHA session:', error);
+        (window as any).turnstile.reset();
+        turnstileToken = null;
+        return false;
+    }
+}
+
+async function handleVote(id: number, clickedDirection: VoteStatus) {
+    const hasSession = await ensureCaptchaSession();
+    if (!hasSession) return;
 
     const votedLinks = getVotedLinks();
     const currentVote = votedLinks[id];
@@ -143,22 +175,19 @@ async function handleVote(id: number, clickedDirection: VoteStatus) {
     if (currentVote === clickedDirection) { // User is clearing their vote
         promise = fetch(`${API_BASE_URL}/links/${id}/un${clickedDirection}vote`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token: turnstileToken }),
+            credentials: 'include',
         });
         nextVote = null;
     } else if (currentVote) { // User is clicking the opposite button, which cancels the current vote
         promise = fetch(`${API_BASE_URL}/links/${id}/un${currentVote}vote`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token: turnstileToken }),
+            credentials: 'include',
         });
         nextVote = null;
     } else { // User is casting a new vote
         promise = fetch(`${API_BASE_URL}/links/${id}/${clickedDirection}vote`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token: turnstileToken }),
+            credentials: 'include',
         });
         nextVote = clickedDirection;
     }
@@ -169,16 +198,16 @@ async function handleVote(id: number, clickedDirection: VoteStatus) {
             // On success, update local state and re-fetch everything
             updateVotedLink(id, nextVote);
             fetchLinks();
+        } else if (response.status === 403) {
+            alert('Your CAPTCHA session expired. Please complete it again.');
+            captchaSessionReady = false;
         } else {
             alert(`Vote failed. Please try again.`);
-            // If the vote failed, the token might be bad, so reset the widget.
-            (window as any).turnstile.reset();
-            turnstileToken = null;
+            captchaSessionReady = false;
         }
     } catch (error) {
         console.error(`Error voting:`, error);
-        (window as any).turnstile.reset();
-        turnstileToken = null;
+        captchaSessionReady = false;
     }
 }
 

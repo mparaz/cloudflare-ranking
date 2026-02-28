@@ -38,6 +38,14 @@ const apiWorker = new cloudflare.WorkersScript("api-worker", {
         name: "AE",
         type: "analytics_engine",
         dataset: "ranking_analytics",
+    }, {
+        name: "ALLOWED_ORIGINS",
+        type: "plain_text",
+        text: "https://aisoftwareengineering.com,https://ranking-frontend.pages.dev,http://localhost:5173",
+    }, {
+        name: "CAPTCHA_SESSION_TTL_SECONDS",
+        type: "plain_text",
+        text: "600",
     }],
     mainModule: "index.js",
     compatibilityDate: "2025-09-27",
