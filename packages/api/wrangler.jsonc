@@ -17,7 +17,11 @@
 			"database_id": "ef4f7d9c-f2b9-4dd9-81d1-8f708314b27b",
 			"migrations_dir": "migrations"
 		}
-	]
+	],
+	"vars": {
+		"ALLOWED_ORIGINS": "http://localhost:5173,https://aisoftwareengineering.com,https://ranking-frontend.pages.dev",
+		"CAPTCHA_SESSION_TTL_SECONDS": "600"
+	}
 	/**
 	 * Smart Placement
 	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
