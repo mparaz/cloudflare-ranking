@@ -1,2 +1,3 @@
 config:
   ranking-app:cloudflareAccountId: 8e9dc807461460edba2cc93481932088
+  ranking-app:appTitle: Link Ranker

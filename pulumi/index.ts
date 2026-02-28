@@ -6,6 +6,7 @@ import * as path from "path";
 // Get the Cloudflare account ID from config
 const config = new pulumi.Config();
 const accountId = config.require("cloudflareAccountId");
+const appTitle = config.get("appTitle") || "Link Ranker";
 
 // 1. D1 Database
 const d1Database = new cloudflare.D1Database("ranking-db", {
@@ -46,6 +47,10 @@ const apiWorker = new cloudflare.WorkersScript("api-worker", {
         name: "CAPTCHA_SESSION_TTL_SECONDS",
         type: "plain_text",
         text: "600",
+    }, {
+        name: "APP_TITLE",
+        type: "plain_text",
+        text: appTitle,
     }],
     mainModule: "index.js",
     compatibilityDate: "2025-09-27",
@@ -57,7 +62,7 @@ const frontendPages = new cloudflare.PagesProject("frontend-pages", {
     name: "ranking-frontend",
     productionBranch: "main",
     buildConfig: {
-        buildCommand: "pnpm --filter frontend build",
+        buildCommand: "pnpm --filter frontend build # force redeploy 2",
         destinationDir: "dist",
     },
     deploymentConfigs: {
@@ -71,6 +76,10 @@ const frontendPages = new cloudflare.PagesProject("frontend-pages", {
                     type: "plain_text",
                     value: "https://ranking-api.mparaz.workers.dev",
                 },
+                VITE_APP_TITLE: {
+                    type: "plain_text",
+                    value: appTitle,
+                },
             },
         },
         preview: {
@@ -82,6 +91,10 @@ const frontendPages = new cloudflare.PagesProject("frontend-pages", {
                 VITE_API_BASE_URL: {
                     type: "plain_text",
                     value: "https://ranking-api.mparaz.workers.dev",
+                },
+                VITE_APP_TITLE: {
+                    type: "plain_text",
+                    value: appTitle,
                 },
             },
         },

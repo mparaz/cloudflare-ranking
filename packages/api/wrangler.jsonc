@@ -20,7 +20,8 @@
 	],
 	"vars": {
 		"ALLOWED_ORIGINS": "http://localhost:5173,https://aisoftwareengineering.com,https://ranking-frontend.pages.dev",
-		"CAPTCHA_SESSION_TTL_SECONDS": "600"
+		"CAPTCHA_SESSION_TTL_SECONDS": "600",
+		"APP_TITLE": "Link Ranker"
 	}
 	/**
 	 * Smart Placement
