@@ -5,7 +5,7 @@
     "dev": "pnpm --filter frontend dev",
     "build": "pnpm --filter frontend build && pnpm --filter ranking-api build",
     "deploy:api": "pnpm --filter ranking-api build && pnpm --filter ranking-api exec wrangler deploy",
-    "deploy:frontend": "VITE_APP_TITLE=\"$(cd pulumi && pulumi config get appTitle)\" pnpm --filter frontend build && pnpm --filter ranking-api exec wrangler pages deploy ../frontend/dist --project-name ranking-frontend --branch main",
+    "deploy:frontend": "VITE_APP_TITLE=\"$(cd pulumi && pulumi config get appTitle)\" VITE_TURNSTILE_SITE_KEY=\"$(cd pulumi && pulumi stack output turnstileSiteKey)\" VITE_API_BASE_URL=\"https://ranking-api.mparaz.workers.dev\" pnpm --filter frontend build && pnpm --filter ranking-api exec wrangler pages deploy ../frontend/dist --project-name ranking-frontend --branch main",
     "deploy:infra": "pnpm --filter ranking-api build && cd pulumi && pulumi up --yes"
   },
   "devDependencies": {
