@@ -12,6 +12,7 @@ export interface Env {
 	SENTRY_DSN?: string;
 	ALLOWED_ORIGINS?: string;
 	CAPTCHA_SESSION_TTL_SECONDS?: string;
+	APP_TITLE?: string;
 }
 
 type Bindings = {
@@ -21,6 +22,7 @@ type Bindings = {
     SENTRY_DSN?: string;
     ALLOWED_ORIGINS?: string;
     CAPTCHA_SESSION_TTL_SECONDS?: string;
+    APP_TITLE?: string;
 }
 
 const app = new Hono<{ Bindings: Bindings }>();
@@ -217,14 +219,15 @@ app.get('/links', async (c) => {
 app.get('/links.html', async (c) => {
 	try {
 		const { results } = await c.env.DB.prepare('SELECT * FROM links WHERE status = ? ORDER BY created_at DESC').bind('approved').all();
-		
+		const title = c.env.APP_TITLE || 'Link Ranker';
+
 		const html = `
 			<!DOCTYPE html>
 			<html lang="en">
 			<head>
 				<meta charset="UTF-8">
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
-				<title>All Links</title>
+				<title>${title}</title>
 				<style>
 					body { font-family: sans-serif; background-color: #f0f0f0; color: #333; }
 					ul { list-style-type: none; padding: 0; }
@@ -233,7 +236,7 @@ app.get('/links.html', async (c) => {
 				</style>
 			</head>
 			<body>
-				<h1>All Submitted Links</h1>
+				<h1>${title} - All Submitted Links</h1>
 				<ul>
 					${results.map(link => `<li><a href="${(link.url as string)}">${(link.title as string)}</a></li>`).join('')}
 				</ul>
